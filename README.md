@@ -30,6 +30,10 @@ The following supported platform versions are based on the versions suppored by 
 ## iOS
 - Requires `cordova-ios@6+`
 - Supports iOS 9.0+
+
+### iOS Quirks
+
+Since the introduction of iPadOS 13, iPads try to adapt their content mode / user agent for the optimal browsing experience. This may result in iPads having their user agent set to Macintosh, making it hard to detect them as mobile devices using user agent string sniffing. You can change this with the `PreferredContentMode` preference in `config.xml`.
     
 # Example app
 [cordova-plugin-inappbrowser-popup-bridge-test](https://github.com/dpa99c/cordova-plugin-inappbrowser-popup-bridge-test) contains a Cordova project which builds a test app for Android and iOS to illustrate usage of this plugin.
