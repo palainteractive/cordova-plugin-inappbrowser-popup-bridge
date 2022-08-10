@@ -43,12 +43,37 @@
                 <param name="android-package" value="org.apache.cordova.inappbrowser.InAppBrowser"/>
             </feature>
         </config-file>
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+        	<activity android:name="com.braintreepayments.popupbridge.demo.PopupActivity"
+            	    android:launchMode="singleTask"
+            	    android:exported="true">
+            	<intent-filter>
+                	<action android:name="android.intent.action.VIEW" />
+                	<category android:name="android.intent.category.DEFAULT" />
+                	<category android:name="android.intent.category.BROWSABLE" />
+                	<data android:scheme="com.braintreepayments.popupbridgeexample" />
+            	</intent-filter>
+        	</activity>
+
+        	<activity android:name="com.braintreepayments.popupbridge.demo.MainActivity"
+            	    android:exported="true">
+            	<intent-filter>
+                	<action android:name="android.intent.action.MAIN" />
+                	<category android:name="android.intent.category.LAUNCHER" />
+            	</intent-filter>
+        	</activity>
+
+	</config-file>
 
         <source-file src="src/android/InAppBrowser.java" target-dir="src/org/apache/cordova/inappbrowser" />
         <source-file src="src/android/InAppBrowserDialog.java" target-dir="src/org/apache/cordova/inappbrowser" />
         <source-file src="src/android/InAppChromeClient.java" target-dir="src/org/apache/cordova/inappbrowser" />
+        <source-file src="src/android/MainActivity.java" target-dir="src/com/braintreepayments/popupbridge/demo" />
+        <source-file src="src/android/PopupActivity.java" target-dir="src/com/braintreepayments/popupbridge/demo" />
 
         <!-- drawable src/android/resources -->
+        <resource-file src="src/android/res/layout/activity_main.xml" target="res/layout/activity_main.xml" />
+        <resource-file src="src/android/res/layout/activity_popup.xml" target="res/layout/activity_popup.xml" />
         <resource-file src="src/android/res/drawable-hdpi/ic_action_next_item.png" target="res/drawable-hdpi/ic_action_next_item.png" />
         <resource-file src="src/android/res/drawable-mdpi/ic_action_next_item.png" target="res/drawable-mdpi/ic_action_next_item.png" />
         <resource-file src="src/android/res/drawable-xhdpi/ic_action_next_item.png" target="res/drawable-xhdpi/ic_action_next_item.png" />
