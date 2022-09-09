@@ -18,25 +18,28 @@
 */
 package org.apache.cordova.inappbrowser;
 
+import org.apache.cordova.inappbrowser.IntentLogger;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Parcelable;
 import android.provider.Browser;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.net.http.SslError;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.provider.Browser;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
@@ -84,14 +87,16 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
+
+import androidx.fragment.app.FragmentActivity;
 
 @SuppressLint("SetJavaScriptEnabled")
 public class InAppBrowser extends CordovaPlugin {
@@ -160,6 +165,8 @@ public class InAppBrowser extends CordovaPlugin {
     private String[] allowedSchemes;
     private InAppBrowserClient currentClient;
     private PopupBridgeClient popupBridgeClient;
+    static final String BUNDLE_KEY_URL = "PopupActivity.BUNDLE_KEY_URL";
+    private static final String TAG = "FL1VVR.InAppBrowser";
 
     /**
      * Executes the request and returns PluginResult.
@@ -227,7 +234,23 @@ public class InAppBrowser extends CordovaPlugin {
                         // load in webview
                         if (Boolean.TRUE.equals(shouldAllowNavigation)) {
                             LOG.d(LOG_TAG, "loading in webview");
+                            // START
+                            Log.w( TAG, "execute.open");
+                            if( popupBridgeClient == null) {
+                                createPopupBridgeClient();
+                            }
+                            String url = cordova.getActivity().getIntent().getStringExtra(BUNDLE_KEY_URL);
+                            if (url == null) {
+                                // assume launch is from deep link; fetch url from persistent storage
+                                url = getPendingURLFromPersistentStorage();
+                                Log.w( TAG, "got PendingURLFromPersistentStorage: "+url);
+                            }
+                            // END
                             webView.loadUrl(url);
+                            // START
+                            Log.w( TAG, "savePendingURL: "+url);
+                            savePendingURL(url);
+                            // END
                         }
                         //Load the dialer
                         else if (url.startsWith(WebView.SCHEME_TEL))
@@ -352,12 +375,32 @@ public class InAppBrowser extends CordovaPlugin {
         return true;
     }
 
+    private String getPendingURLFromPersistentStorage() {
+        SharedPreferences sharedPreferences = cordova.getActivity().getPreferences(Context.MODE_PRIVATE);
+        if (sharedPreferences != null) {
+            return sharedPreferences.getString(BUNDLE_KEY_URL, null);
+        }
+        return null;
+    }
+
+    private void savePendingURL(String url) {
+        SharedPreferences sharedPreferences = cordova.getActivity().getPreferences(Context.MODE_PRIVATE);
+        if (sharedPreferences != null) {
+            sharedPreferences.edit()
+                    .putString(BUNDLE_KEY_URL, url)
+                    .apply();
+        }
+    }
+
     /**
      * Called when the view navigates.
      */
     @Override
     public void onReset() {
+        Log.w( TAG, "InAppBrowser.Activity.onReset");
+
         closeDialog();
+
     }
 
     /**
@@ -365,6 +408,7 @@ public class InAppBrowser extends CordovaPlugin {
      */
     @Override
     public void onPause(boolean multitasking) {
+        Log.w( TAG, "InAppBrowser.Activity.onPause");
         if (shouldPauseInAppBrowser) {
             inAppWebView.onPause();
         }
@@ -375,21 +419,25 @@ public class InAppBrowser extends CordovaPlugin {
      */
     @Override
     public void onResume(boolean multitasking) {
-        if (shouldPauseInAppBrowser) {
-            inAppWebView.onResume();
-        }
+        Log.w( TAG, "InAppBrowser.onResume()");
         try{
             if(popupBridgeClient == null){
                 createPopupBridgeClient();
             }
+            IntentLogger.logFullContent( cordova.getActivity().getIntent());
             popupBridgeClient.deliverPopupBridgeResult((FragmentActivity) cordova.getActivity());
         }catch (Exception e){
             LOG.e(LOG_TAG, "Failed to deliver PopupBridge result: "+e.getMessage());
+        }
+        Log.w( TAG, "shouldPauseInAppBrowser: "+shouldPauseInAppBrowser);
+        if (shouldPauseInAppBrowser) {
+            inAppWebView.onResume();
         }
     }
 
     @Override
     public void onNewIntent(Intent intent) {
+        Log.w( TAG, "InAppBrowser.onNewIntent()");
         try{
             cordova.getActivity().setIntent(intent);
         }catch (Exception e){
@@ -402,6 +450,8 @@ public class InAppBrowser extends CordovaPlugin {
      * Stop listener.
      */
     public void onDestroy() {
+        Log.w( TAG, "InAppBrowser.onDestroy()");
+
         closeDialog();
     }
 
@@ -1126,7 +1176,7 @@ public class InAppBrowser extends CordovaPlugin {
 
             // register error listener
             popupBridgeClient.setErrorListener(error -> {
-                Log.e("PopupBridgeActivity", error.getMessage());
+                Log.e("FL1VVR.PopupBridgeActivity", error.getMessage());
             });
 
         }catch (Exception e){} //swallow exception
