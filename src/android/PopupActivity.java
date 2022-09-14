@@ -19,11 +19,12 @@ public class PopupActivity extends AppCompatActivity {
 
     private WebView mWebView;
     private PopupBridgeClient mPopupBridgeClient;
-    private final static String TAG = "FL1VVR";
+    private final static String TAG = "VENMODEMO.PopupActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.w( TAG, "onCreate(): ");
         setContentView(R.layout.activity_popup);
         mWebView = findViewById(R.id.web_view);
 
@@ -45,12 +46,16 @@ public class PopupActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mPopupBridgeClient.deliverPopupBridgeResult(this);
+        Log.w( TAG, "onResume(): ");
+        if( mPopupBridgeClient != null) {
+            mPopupBridgeClient.deliverPopupBridgeResult(this);
+        }
     }
 
     @Override
     protected void onNewIntent(Intent newIntent) {
         super.onNewIntent(newIntent);
+        Log.w( TAG, "onNewIntent(): ");
         setIntent(newIntent);
     }
 

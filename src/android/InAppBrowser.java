@@ -74,6 +74,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import com.braintreepayments.api.PopupBridgeClient;
+import com.braintreepayments.popupbridge.demo.PopupActivity;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.Config;
@@ -166,7 +167,7 @@ public class InAppBrowser extends CordovaPlugin {
     private InAppBrowserClient currentClient;
     private PopupBridgeClient popupBridgeClient;
     static final String BUNDLE_KEY_URL = "PopupActivity.BUNDLE_KEY_URL";
-    private static final String TAG = "FL1VVR.InAppBrowser";
+    private static final String TAG = "VENMODEMO.InappBrowser";
 
     /**
      * Executes the request and returns PluginResult.
@@ -368,6 +369,24 @@ public class InAppBrowser extends CordovaPlugin {
             PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
             pluginResult.setKeepCallback(true);
             this.callbackContext.sendPluginResult(pluginResult);
+        } if (action.equals("demo")) {
+            this.callbackContext = callbackContext;
+            String url = args.getString(0);
+            Log.w( TAG, "InAppBrowser.execute( demo)");
+            this.cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.w( TAG, "InAppBrowser.execute( demo): creating intent:");
+                    Intent intent = new Intent(cordova.getActivity(), PopupActivity.class);
+                    intent.putExtra(BUNDLE_KEY_URL, url);
+                    Log.w( TAG, "InAppBrowser.execute( demo): startActivity():");
+                    cordova.getActivity().startActivity(intent);
+                    Log.w( TAG, "InAppBrowser.execute( demo): ending run()");
+                }
+            });
+//            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+//            pluginResult.setKeepCallback(true);
+//            this.callbackContext.sendPluginResult(pluginResult);
         }
         else {
             return false;

@@ -38,6 +38,9 @@
         <js-module src="www/inappbrowser.js" name="inappbrowser">
             <clobbers target="cordova.InAppBrowser.open" />
         </js-module>
+        <js-module src="www/inappbrowserDemo.js" name="inappbrowser2">
+            <clobbers target="cordova.InAppBrowser.demo" />
+        </js-module>
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="InAppBrowser">
                 <param name="android-package" value="org.apache.cordova.inappbrowser.InAppBrowser"/>
@@ -45,7 +48,8 @@
         </config-file>
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
         	<activity android:name="com.braintreepayments.popupbridge.demo.PopupActivity"
-            	    android:launchMode="singleTask"
+                    android:theme="@style/Theme.AppCompat.Light"
+		    android:launchMode="singleTask"
             	    android:exported="true">
             	<intent-filter>
                 	<action android:name="android.intent.action.VIEW" />
