@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.braintreepayments.api.PopupBridgeClient;
 
+import org.apache.cordova.inappbrowser.IntentLogger;
+
 public class PopupActivity extends AppCompatActivity {
 
     static final String BUNDLE_KEY_URL = "PopupActivity.BUNDLE_KEY_URL";
@@ -48,7 +50,10 @@ public class PopupActivity extends AppCompatActivity {
         super.onResume();
         Log.w( TAG, "onResume(): ");
         if( mPopupBridgeClient != null) {
+            IntentLogger.logFullContent( getIntent());
             mPopupBridgeClient.deliverPopupBridgeResult(this);
+        } else {
+            Log.w( TAG, "unexpected: mPopupBridgeClient is nul");
         }
     }
 

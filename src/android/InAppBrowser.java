@@ -383,7 +383,6 @@ public class InAppBrowser extends CordovaPlugin
                     Intent intent = new Intent(cordova.getActivity(), PopupActivity.class);
                     intent.putExtra(BUNDLE_KEY_URL, url);
                     Log.w( TAG, "InAppBrowser.execute( demo): startActivity():");
-                    cordova.getActivity().startActivity(intent);
                     cordova.startActivityForResult(InAppBrowser.this, intent, POPUP_ACTIVITY_REQUESTCODE);
                     Log.w( TAG, "InAppBrowser.execute( demo): ending run()");
                 }

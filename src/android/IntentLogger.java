@@ -10,7 +10,7 @@ import static android.content.Intent.URI_INTENT_SCHEME;
 
 public class IntentLogger {
 
-    private static final String TAG = "FL1VVR";
+    private static final String TAG = "VENMODEMO.IntentLogger";
 
     public static void logFullContent(Intent intent) {
 
