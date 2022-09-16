@@ -72,6 +72,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
+import androidx.activity.result.ActivityResultCallback;
 
 import com.braintreepayments.api.PopupBridgeClient;
 import com.braintreepayments.popupbridge.demo.PopupActivity;
@@ -100,7 +101,8 @@ import java.util.StringTokenizer;
 import androidx.fragment.app.FragmentActivity;
 
 @SuppressLint("SetJavaScriptEnabled")
-public class InAppBrowser extends CordovaPlugin {
+public class InAppBrowser extends CordovaPlugin
+{
 
     private static final String NULL = "null";
     protected static final String LOG_TAG = "InAppBrowser";
@@ -168,6 +170,7 @@ public class InAppBrowser extends CordovaPlugin {
     private PopupBridgeClient popupBridgeClient;
     static final String BUNDLE_KEY_URL = "PopupActivity.BUNDLE_KEY_URL";
     private static final String TAG = "VENMODEMO.InappBrowser";
+    private static final int POPUP_ACTIVITY_REQUESTCODE = 5073145;
 
     /**
      * Executes the request and returns PluginResult.
@@ -381,6 +384,7 @@ public class InAppBrowser extends CordovaPlugin {
                     intent.putExtra(BUNDLE_KEY_URL, url);
                     Log.w( TAG, "InAppBrowser.execute( demo): startActivity():");
                     cordova.getActivity().startActivity(intent);
+                    cordova.startActivityForResult(InAppBrowser.this, intent, POPUP_ACTIVITY_REQUESTCODE);
                     Log.w( TAG, "InAppBrowser.execute( demo): ending run()");
                 }
             });
@@ -1237,12 +1241,19 @@ public class InAppBrowser extends CordovaPlugin {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         LOG.d(LOG_TAG, "onActivityResult");
         // If RequestCode or Callback is Invalid
-        if(requestCode != FILECHOOSER_REQUESTCODE_LOLLIPOP || mUploadCallbackLollipop == null) {
+        if( mUploadCallbackLollipop == null) {
             super.onActivityResult(requestCode, resultCode, intent);
             return;
         }
-        mUploadCallbackLollipop.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
-        mUploadCallbackLollipop = null;
+        if( requestCode == FILECHOOSER_REQUESTCODE_LOLLIPOP) {
+            mUploadCallbackLollipop.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
+            mUploadCallbackLollipop = null;
+        } else if( requestCode == InAppBrowser.POPUP_ACTIVITY_REQUESTCODE) {
+            Log.w( TAG, "processing POPUP_ACTIVITY_REQUESTCODE");
+            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+            pluginResult.setKeepCallback(true);
+            this.callbackContext.sendPluginResult(pluginResult);
+        }
     }
 
     /**
@@ -1561,25 +1572,25 @@ public class InAppBrowser extends CordovaPlugin {
                 obj.put("sslerror", error.getPrimaryError());
                 String message;
                 switch (error.getPrimaryError()) {
-                case SslError.SSL_DATE_INVALID:
-                    message = "The date of the certificate is invalid";
-                    break;
-                case SslError.SSL_EXPIRED:
-                    message = "The certificate has expired";
-                    break;
-                case SslError.SSL_IDMISMATCH:
-                    message = "Hostname mismatch";
-                    break;
-                default:
-                case SslError.SSL_INVALID:
-                    message = "A generic error occurred";
-                    break;
-                case SslError.SSL_NOTYETVALID:
-                    message = "The certificate is not yet valid";
-                    break;
-                case SslError.SSL_UNTRUSTED:
-                    message = "The certificate authority is not trusted";
-                    break;
+                    case SslError.SSL_DATE_INVALID:
+                        message = "The date of the certificate is invalid";
+                        break;
+                    case SslError.SSL_EXPIRED:
+                        message = "The certificate has expired";
+                        break;
+                    case SslError.SSL_IDMISMATCH:
+                        message = "Hostname mismatch";
+                        break;
+                    default:
+                    case SslError.SSL_INVALID:
+                        message = "A generic error occurred";
+                        break;
+                    case SslError.SSL_NOTYETVALID:
+                        message = "The certificate is not yet valid";
+                        break;
+                    case SslError.SSL_UNTRUSTED:
+                        message = "The certificate authority is not trusted";
+                        break;
                 }
                 obj.put("message", message);
 
