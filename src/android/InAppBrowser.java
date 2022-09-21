@@ -236,24 +236,12 @@ public class InAppBrowser extends CordovaPlugin
                         }
                         // load in webview
                         if (Boolean.TRUE.equals(shouldAllowNavigation)) {
-                            LOG.d(LOG_TAG, "loading in webview");
-                            // START
                             Log.w( TAG, "execute.open");
                             if( popupBridgeClient == null) {
                                 createPopupBridgeClient();
                             }
                             String url = cordova.getActivity().getIntent().getStringExtra("url");
-                            if (url == null) {
-                                // assume launch is from deep link; fetch url from persistent storage
-                                url = getPendingURLFromPersistentStorage();
-                                Log.w( TAG, "got PendingURLFromPersistentStorage: "+url);
-                            }
-                            // END
                             webView.loadUrl(url);
-                            // START
-                            Log.w( TAG, "savePendingURL: "+url);
-                            savePendingURL(url);
-                            // END
                         }
                         //Load the dialer
                         else if (url.startsWith(WebView.SCHEME_TEL))
@@ -380,7 +368,7 @@ public class InAppBrowser extends CordovaPlugin
                 public void run() {
                     Log.w( TAG, "InAppBrowser.execute( demo): creating intent:");
                     Intent intent = new Intent(cordova.getActivity(), PopupActivity.class);
-                    intent.putExtra(BUNDLE_KEY_URL, url);
+                    intent.putExtra("url", url);
                     Log.w( TAG, "InAppBrowser.execute( demo): startActivity():");
                     cordova.startActivityForResult(InAppBrowser.this, intent, POPUP_ACTIVITY_REQUESTCODE);
                     Log.w( TAG, "InAppBrowser.execute( demo): ending run()");
@@ -394,23 +382,6 @@ public class InAppBrowser extends CordovaPlugin
             return false;
         }
         return true;
-    }
-
-    private String getPendingURLFromPersistentStorage() {
-        SharedPreferences sharedPreferences = cordova.getActivity().getPreferences(Context.MODE_PRIVATE);
-        if (sharedPreferences != null) {
-            return sharedPreferences.getString(BUNDLE_KEY_URL, null);
-        }
-        return null;
-    }
-
-    private void savePendingURL(String url) {
-        SharedPreferences sharedPreferences = cordova.getActivity().getPreferences(Context.MODE_PRIVATE);
-        if (sharedPreferences != null) {
-            sharedPreferences.edit()
-                    .putString(BUNDLE_KEY_URL, url)
-                    .apply();
-        }
     }
 
     /**
