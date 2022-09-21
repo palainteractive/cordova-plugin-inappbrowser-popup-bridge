@@ -137,7 +137,7 @@ public class InAppBrowser extends CordovaPlugin
 
     private static final List customizableOptions = Arrays.asList(CLOSE_BUTTON_CAPTION, TOOLBAR_COLOR, NAVIGATION_COLOR, CLOSE_BUTTON_COLOR, FOOTER_COLOR);
 
-    private InAppBrowserDialog dialog;
+    private org.apache.cordova.inappbrowser.InAppBrowserDialog dialog;
     private WebView inAppWebView;
     private EditText edittext;
     private CallbackContext callbackContext;
@@ -168,7 +168,6 @@ public class InAppBrowser extends CordovaPlugin
     private String[] allowedSchemes;
     private InAppBrowserClient currentClient;
     private PopupBridgeClient popupBridgeClient;
-    static final String BUNDLE_KEY_URL = "PopupActivity.BUNDLE_KEY_URL";
     private static final String TAG = "VENMODEMO.InappBrowser";
     private static final int POPUP_ACTIVITY_REQUESTCODE = 5073145;
 
@@ -243,7 +242,7 @@ public class InAppBrowser extends CordovaPlugin
                             if( popupBridgeClient == null) {
                                 createPopupBridgeClient();
                             }
-                            String url = cordova.getActivity().getIntent().getStringExtra(BUNDLE_KEY_URL);
+                            String url = cordova.getActivity().getIntent().getStringExtra("url");
                             if (url == null) {
                                 // assume launch is from deep link; fetch url from persistent storage
                                 url = getPendingURLFromPersistentStorage();
@@ -446,8 +445,11 @@ public class InAppBrowser extends CordovaPlugin
             if(popupBridgeClient == null){
                 createPopupBridgeClient();
             }
-            IntentLogger.logFullContent( cordova.getActivity().getIntent());
-            popupBridgeClient.deliverPopupBridgeResult((FragmentActivity) cordova.getActivity());
+            Intent i = cordova.getActivity().getIntent();
+            if( i.getDataString() != null) {
+                Log.w( TAG, "delivering datastring to popupBridge: "+i.getDataString());
+                popupBridgeClient.deliverPopupBridgeResult((FragmentActivity) cordova.getActivity());
+            }
         }catch (Exception e){
             LOG.e(LOG_TAG, "Failed to deliver PopupBridge result: "+e.getMessage());
         }
@@ -903,7 +905,7 @@ public class InAppBrowser extends CordovaPlugin
                 };
 
                 // Let's create the main dialog
-                dialog = new InAppBrowserDialog(cordova.getActivity(), android.R.style.Theme_NoTitleBar);
+                dialog = new org.apache.cordova.inappbrowser.InAppBrowserDialog(cordova.getActivity(), android.R.style.Theme_NoTitleBar);
                 dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_Dialog;
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                 if (fullscreen) {
@@ -1042,7 +1044,7 @@ public class InAppBrowser extends CordovaPlugin
                 inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                 inAppWebView.setId(Integer.valueOf(6));
                 // File Chooser Implemented ChromeClient
-                inAppWebView.setWebChromeClient(new InAppChromeClient(thatWebView) {
+                inAppWebView.setWebChromeClient(new org.apache.cordova.inappbrowser.InAppChromeClient(thatWebView) {
                     // For Android 5.0+
                     public boolean onShowFileChooser (WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams)
                     {
