@@ -765,7 +765,7 @@ BOOL isExiting = FALSE;
     self.webView = [[WKWebView alloc] initWithFrame:webViewBounds configuration:configuration];
     if (@available(iOS 16.4, *)) {
         BOOL allowWebviewInspectionDefault = YES;
-        self.webView.inspectable = [settings cordovaBoolSettingForKey:@"InspectableWebview" defaultValue:allowWebviewInspectionDefault];
+        self.webView.inspectable = [_settings cordovaBoolSettingForKey:@"InspectableWebview" defaultValue:allowWebviewInspectionDefault];
     }
 
     [self.view addSubview:self.webView];
