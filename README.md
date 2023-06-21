@@ -10,6 +10,8 @@ See the [example app project](https://github.com/dpa99c/cordova-plugin-inappbrow
 
 As of iOS 16.4 Apple has decided that webviews should no longer be inspectable by default, which makes debugging a pain.   So we have addressed this issue, by reversing the default to the inspectable=YES setting, in the 'inspectable' branch of this project.   'master' will continue for now to have the normal defaults.
 
+To get inspectable webviews with this plugin use this branch: `https://github.com/palainteractive/cordova-plugin-inappbrowser-popup-bridge#inspectable`
+
 ## Installation
 
     cordova plugin add cordova-plugin-inappbrowser-popup-bridge
