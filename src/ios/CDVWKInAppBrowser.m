@@ -1083,7 +1083,7 @@ BOOL isExiting = FALSE;
 
 - (void)close
 {
-    if ((self.navigationDelegate != nil) && 
+    if (!isExiting && (self.navigationDelegate != nil) && 
         [self.navigationDelegate respondsToSelector:@selector(beforeBrowserExit)]) {
         [self.navigationDelegate beforeBrowserExit];
     }
