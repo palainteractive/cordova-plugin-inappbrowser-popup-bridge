@@ -1083,8 +1083,11 @@ BOOL isExiting = FALSE;
 
 - (void)close
 {
-    [self.navigationDelegate beforeBrowserExit];
-    
+    if ((self.navigationDelegate != nil) && 
+        [self.navigationDelegate respondsToSelector:@selector(beforeBrowserExit)]) {
+        [self.navigationDelegate beforeBrowserExit];
+    }
+
     self.currentURL = nil;
     
     __weak UIViewController* weakSelf = self;
