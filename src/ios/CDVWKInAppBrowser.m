@@ -652,6 +652,15 @@ static CDVWKInAppBrowser* instance = nil;
     }
 }
 
+- (void)beforeBrowserExit {
+    if (self.callbackId != nil) {            
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                          messageAsDictionary:@{@"type":@"message", @"data":@"beforeBrowserExit"}];
+            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
+}
+
 - (void)browserExit
 {
     if (self.callbackId != nil) {
@@ -1074,6 +1083,8 @@ BOOL isExiting = FALSE;
 
 - (void)close
 {
+    [self.navigationDelegate beforeBrowserExit];
+    
     self.currentURL = nil;
     
     __weak UIViewController* weakSelf = self;
