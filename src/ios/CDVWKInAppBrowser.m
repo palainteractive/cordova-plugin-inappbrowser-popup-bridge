@@ -747,10 +747,11 @@ BOOL isExiting = FALSE;
     [configuration.userContentController addScriptMessageHandler:self name:IAB_BRIDGE_NAME];
     
     //WKWebView options
-    configuration.allowsInlineMediaPlayback = _browserOptions.allowinlinemediaplayback;
+    //configuration.allowsInlineMediaPlayback = _browserOptions.allowinlinemediaplayback;
+    configuration.allowsInlineMediaPlayback = YES;
     configuration.allowsAirPlayForMediaPlayback = NO;
     configuration.allowsPictureInPictureMediaPlayback = NO;
-    
+
     if (IsAtLeastiOSVersion(@"10.0")) {
         configuration.ignoresViewportScaleLimits = _browserOptions.enableviewportscale;
         if(_browserOptions.mediaplaybackrequiresuseraction == YES){
