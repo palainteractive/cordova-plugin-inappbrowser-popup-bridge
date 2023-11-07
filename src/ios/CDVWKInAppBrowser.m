@@ -767,15 +767,6 @@ BOOL isExiting = FALSE;
 	configuration.defaultWebpagePreferences.preferredContentMode = WKContentModeMobile;
     }
     self.webView = [[WKWebView alloc] initWithFrame:webViewBounds configuration:configuration];
-    if (@available(iOS 16.4, *)) {
-        BOOL allowWebviewInspectionDefault = NO;
-        NSNumber *inspectableWebviewSetting = [_settings objectForKey:@"InspectableWebview"];
-        if (inspectableWebviewSetting != nil) {
-            self.webView.inspectable = [inspectableWebviewSetting boolValue];
-        } else {
-            self.webView.inspectable = allowWebviewInspectionDefault;
-        }
-    }
 
     [self.view addSubview:self.webView];
     [self.view sendSubviewToBack:self.webView];
