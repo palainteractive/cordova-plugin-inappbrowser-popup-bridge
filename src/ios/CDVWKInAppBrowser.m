@@ -745,7 +745,79 @@ BOOL isExiting = FALSE;
     configuration.processPool = [[CDVWKProcessPoolFactory sharedFactory] sharedProcessPool];
 #endif
     [configuration.userContentController addScriptMessageHandler:self name:IAB_BRIDGE_NAME];
+    //Added the script that will inject at initial load time.
+
+  //    NSString *consoleLogScript =  @"function captureLog(msg) {"
+//    "    window.webkit.messageHandlers.logHandler.postMessage(msg);"
+//    "}"
+//    "console.log = function(msg) {"
+//    "    captureLog('Log: ' + msg);"
+//    "};"
+//    "console.error = function(msg) {"
+//    "    captureLog('Error: ' + msg);"
+//    "};"
+//    "console.warn = function(msg) {"
+//    "    captureLog('Warning: ' + msg);"
+//    "};"
+//    "console.info = function(msg) {"
+//    "    captureLog('Info: ' + msg);"
+//    "};";
+//
+    NSString *consoleLogScript  = @"(function() {"
+    "    const OriginalXMLHttpRequest = XMLHttpRequest;"
+    ""
+    "    function InterceptedXMLHttpRequest() {"
+    "        const xhr = new OriginalXMLHttpRequest();"
+    ""
+    "        xhr.addEventListener('readystatechange', function() {"
+    "            if (xhr.readyState === 4 && xhr.status >= 400) {"
+    "                const errorMsg = 'Intercepted failed XMLHttpRequest: ' + xhr.responseURL + ' | Response: ' + xhr.responseText;"
+    "                console.log(errorMsg);"
+    "                window.webkit.messageHandlers.logHandler.postMessage(errorMsg);"
+    "            }"
+    "        });"
+    ""
+    "        return xhr;"
+    "    }"
+    ""
+    "    InterceptedXMLHttpRequest.prototype = OriginalXMLHttpRequest.prototype;"
+    "    for (const prop in OriginalXMLHttpRequest) {"
+    "        if (OriginalXMLHttpRequest.hasOwnProperty(prop)) {"
+    "            InterceptedXMLHttpRequest[prop] = OriginalXMLHttpRequest[prop];"
+    "        }"
+    "    }"
+    ""
+    "    XMLHttpRequest = InterceptedXMLHttpRequest;"
+    "})();"
+    ""
+    "(function() {"
+    "    const originalFetch = fetch;"
+    ""
+    "    window.fetch = function() {"
+    "        const requestArguments = arguments;"
+    ""
+    "        return originalFetch.apply(this, requestArguments)"
+    "            .then(function(response) {"
+    "                if (!response.ok) {"
+    "                    const errorMsg = 'Intercepted failed fetch request: ' + response.url + ' | Response: ' + response.clone().text();"
+    "                    console.log(errorMsg);"
+    "                    window.webkit.messageHandlers.logHandler.postMessage(errorMsg);"
+    "                }"
+    "                return response;"
+    "            });"
+    "    };"
+    ""
+"})();";
     
+    
+    
+    
+    WKUserScript *consoleLogUserScript = [[WKUserScript alloc] initWithSource:consoleLogScript injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+    [configuration.userContentController addUserScript:consoleLogUserScript];
+    [configuration.userContentController addScriptMessageHandler:self name:@"logHandler"];
+
+
+
     //WKWebView options
     //configuration.allowsInlineMediaPlayback = _browserOptions.allowinlinemediaplayback;
     configuration.allowsInlineMediaPlayback = YES;
@@ -1250,6 +1322,12 @@ BOOL isExiting = FALSE;
     return YES;
 }
 
+- (void)handleConsoleLogMessage:(NSString *)message {
+    // you can forward the console log message to anywhere
+    NSLog(@"Log from WebView: %@", message);
+    // You can replace the NSLog call to webservices call 
+}
+
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     if ((self.orientationDelegate != nil) && [self.orientationDelegate respondsToSelector:@selector(supportedInterfaceOrientations)]) {
@@ -1282,5 +1360,27 @@ BOOL isExiting = FALSE;
     [viewController dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {
+  
+    if ([navigationResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)navigationResponse.response;
+
+        // You can check the URL and status code here
+        NSURL *url = httpResponse.URL;
+        NSInteger statusCode = httpResponse.statusCode;
+
+        // You can also access response headers if needed
+        NSDictionary *headers = httpResponse.allHeaderFields;
+
+        NSLog(@"Intercepted URL response: %@, Status code: %ld", url, (long)statusCode);
+
+        // Perform any additional actions or checks with the intercepted response
+        // ...
+
+    }
+
+    // Allow the navigation to continue
+    decisionHandler(WKNavigationResponsePolicyAllow);
+}
 
 @end //CDVWKInAppBrowserViewController
