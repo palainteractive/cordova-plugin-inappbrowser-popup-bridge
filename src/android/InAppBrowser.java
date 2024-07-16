@@ -438,7 +438,11 @@ public class InAppBrowser extends CordovaPlugin {
                 @SuppressLint("NewApi")
                 @Override
                 public void run() {
-                    inAppWebView.evaluateJavascript(finalScriptToInject, null);
+                    if (inAppWebView != null) {
+                        inAppWebView.evaluateJavascript(finalScriptToInject, null);
+                    } else {
+                        LOG.e(LOG_TAG, "inAppWebView is null in run() method");
+                    }
                 }
             });
         } else {
